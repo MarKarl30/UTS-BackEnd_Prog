@@ -1,24 +1,51 @@
 const usersRepository = require('./users-repository');
 const { hashPassword, passwordMatched } = require('../../../utils/password');
+const { isNull } = require('lodash');
 
 /**
  * Get list of users
  * @returns {Array}
  */
-async function getUsers() {
+async function getUsers(page_number, page_size) {
   const users = await usersRepository.getUsers();
+  // Variabel untuk data tambahan
+  const total_pages = Math.ceil(users.length / page_size);
+  const count = users.length;
+  const has_previous_page = page_number > 1;
+  const has_next_page = page_number < total_pages;
 
-  const results = [];
-  for (let i = 0; i < users.length; i += 1) {
-    const user = users[i];
-    results.push({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-    });
+  // Schema data yang akan di ambil dari db
+  const userData = users.map((user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+  }));
+
+  // If page value is null or empty, fetch all data
+  if (!page_number || !page_size) {
+    return {
+      page_number,
+      page_size,
+      count,
+      total_pages,
+      has_previous_page,
+      has_next_page,
+      data: userData,
+    };
+  } else {
+    const offset = (page_number - 1) * page_size;
+    const paginatedList = userData.slice(offset, offset + page_size);
+
+    return {
+      page_number,
+      page_size,
+      count,
+      total_pages,
+      has_previous_page,
+      has_next_page,
+      data: paginatedList,
+    };
   }
-
-  return results;
 }
 
 /**

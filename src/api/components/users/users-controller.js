@@ -10,8 +10,22 @@ const { errorResponder, errorTypes } = require('../../../core/errors');
  */
 async function getUsers(request, response, next) {
   try {
-    const users = await usersService.getUsers();
-    return response.status(200).json(users);
+    page_number = request.query.page_number
+      ? parseInt(request.query.page_number, 10)
+      : null;
+    page_size = request.query.page_size
+      ? parseInt(request.query.page_size, 10)
+      : null;
+
+    let result;
+    if (page_number === null || page_size === null) {
+      // If no pagination params are provided, fetch all users
+      result = await usersService.getUsers();
+    } else {
+      result = await usersService.getUsers(page_number, page_size);
+    }
+
+    return response.status(200).json(result);
   } catch (error) {
     return next(error);
   }
