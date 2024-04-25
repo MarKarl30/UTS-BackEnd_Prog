@@ -10,19 +10,29 @@ const { errorResponder, errorTypes } = require('../../../core/errors');
  */
 async function getUsers(request, response, next) {
   try {
+    // Fetch query dari bruno
     page_number = request.query.page_number
       ? parseInt(request.query.page_number, 10)
       : null;
     page_size = request.query.page_size
       ? parseInt(request.query.page_size, 10)
       : null;
+    search = request.query.search || '';
+    sortField = request.query.sortField || 'email';
+    sortOrder = request.query.sortOrder || 'asc';
 
     let result;
     if (page_number === null || page_size === null) {
-      // If no pagination params are provided, fetch all users
+      // Jika parameter page_number atau page_size null, maka fetch semua data
       result = await usersService.getUsers();
     } else {
-      result = await usersService.getUsers(page_number, page_size);
+      result = await usersService.getUsers(
+        search,
+        sortField,
+        sortOrder,
+        page_number,
+        page_size
+      );
     }
 
     return response.status(200).json(result);
@@ -33,7 +43,7 @@ async function getUsers(request, response, next) {
 
 /**
  * Handle get user detail request
- * @param {object} request - Express request object
+ * @param {object}request - Express request object
  * @param {object} response - Express response object
  * @param {object} next - Express route middlewares
  * @returns {object} Response object or pass an error to the next route

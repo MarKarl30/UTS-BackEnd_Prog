@@ -1,27 +1,59 @@
 const usersRepository = require('./users-repository');
 const { hashPassword, passwordMatched } = require('../../../utils/password');
-const { isNull } = require('lodash');
 
 /**
- * Get list of users
- * @returns {Array}
+ *
+ * @param {String} search
+ * @param {String} sortField
+ * @param {String} sortOrder
+ * @param {String} page_number
+ * @param {String} page_size
+ * @returns
  */
-async function getUsers(page_number, page_size) {
+async function getUsers(search, sortField, sortOrder, page_number, page_size) {
+  // Cek parameter search adalah string dan mengubah search ke bentuk lowercase
+  const searchString = typeof search === 'string' ? search.toLowerCase() : '';
+
   const users = await usersRepository.getUsers();
-  // Variabel untuk data tambahan
+  let filteredUsers = users;
+
+  // Fungsi Search
+  // Search berdasarkan parameter searchString kepada data name dan email
+  if (searchString) {
+    filteredUsers = filteredUsers.filter(
+      (user) =>
+        user?.name?.toLowerCase().includes(searchString) || // Validasi sebelum memanggil toLowerCase
+        user?.email?.toLowerCase().includes(searchString)
+    );
+  }
+
+  // Fungsi Sort
+  // Sort berdasarkan sortField sesuai query
+  filteredUsers.sort((a, b) => {
+    const aField = a?.[sortField]?.toLowerCase() || ''; // Default ke string kosong jika null atau undefined
+    const bField = b?.[sortField]?.toLowerCase() || '';
+
+    // Sort berdasarkan sortOrder sesuai query
+    if (aField < bField) return sortOrder === 'asc' ? -1 : 1;
+    if (aField > bField) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  // Fungsi Pagination
+  // Pagination berdasarkan query page_size dan page_nmumber
   const total_pages = Math.ceil(users.length / page_size);
   const count = users.length;
   const has_previous_page = page_number > 1;
   const has_next_page = page_number < total_pages;
 
-  // Schema data yang akan di ambil dari db
-  const userData = users.map((user) => ({
+  // Menetapkan schema data userData yang aka di output sebagai hasil
+  const userData = filteredUsers.map((user) => ({
     id: user.id,
     name: user.name,
     email: user.email,
   }));
 
-  // If page value is null or empty, fetch all data
+  // Jika value dari query page_number atau page_size null maka fetch all data
   if (!page_number || !page_size) {
     return {
       page_number,
@@ -33,6 +65,7 @@ async function getUsers(page_number, page_size) {
       data: userData,
     };
   } else {
+    // Melakukan pagination sesuai query page_number dan page_size
     const offset = (page_number - 1) * page_size;
     const paginatedList = userData.slice(offset, offset + page_size);
 
