@@ -75,6 +75,8 @@ async function createUser(request, response, next) {
     const email = request.body.email;
     const password = request.body.password;
     const password_confirm = request.body.password_confirm;
+    const loginAttempt = 0;
+    const loginTimeout = null;
 
     // Check confirmation password
     if (password !== password_confirm) {
@@ -93,7 +95,13 @@ async function createUser(request, response, next) {
       );
     }
 
-    const success = await usersService.createUser(name, email, password);
+    const success = await usersService.createUser(
+      name,
+      email,
+      password,
+      loginAttempt,
+      loginTimeout
+    );
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,

@@ -9,6 +9,20 @@ async function getUserByEmail(email) {
   return User.findOne({ email });
 }
 
+async function updateLoginAttempt(loginAttempt, email) {
+  return User.updateOne(
+    {
+      email,
+    },
+    {
+      $set: {
+        loginAttempt,
+      },
+    }
+  );
+}
+
 module.exports = {
   getUserByEmail,
+  updateLoginAttempt,
 };

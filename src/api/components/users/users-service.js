@@ -2,7 +2,7 @@ const usersRepository = require('./users-repository');
 const { hashPassword, passwordMatched } = require('../../../utils/password');
 
 /**
- *
+ * Get users after search, sort and pagination
  * @param {String} search
  * @param {String} sortField
  * @param {String} sortOrder
@@ -108,12 +108,18 @@ async function getUser(id) {
  * @param {string} password - Password
  * @returns {boolean}
  */
-async function createUser(name, email, password) {
+async function createUser(name, email, password, loginAttempt, loginTimeout) {
   // Hash password
   const hashedPassword = await hashPassword(password);
 
   try {
-    await usersRepository.createUser(name, email, hashedPassword);
+    await usersRepository.createUser(
+      name,
+      email,
+      hashedPassword,
+      loginAttempt,
+      loginTimeout
+    );
   } catch (err) {
     return null;
   }
