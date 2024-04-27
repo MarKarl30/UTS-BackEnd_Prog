@@ -3,7 +3,7 @@ const usersSchema = {
   email: String,
   password: String,
   loginAttempt: Number,
-  loginTimeout: Number,
+  lastAttempt: String,
 };
 
 module.exports = usersSchema;

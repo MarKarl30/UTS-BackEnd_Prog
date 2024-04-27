@@ -76,7 +76,7 @@ async function createUser(request, response, next) {
     const password = request.body.password;
     const password_confirm = request.body.password_confirm;
     const loginAttempt = 0;
-    const loginTimeout = null;
+    const lastAttempt = null;
 
     // Check confirmation password
     if (password !== password_confirm) {
@@ -100,7 +100,7 @@ async function createUser(request, response, next) {
       email,
       password,
       loginAttempt,
-      loginTimeout
+      lastAttempt
     );
     if (!success) {
       throw errorResponder(

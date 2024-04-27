@@ -21,7 +21,7 @@ module.exports = {
         .label('Password'),
       password_confirm: joi.string().required().label('Password confirmation'),
       loginAttempt: joi.number().default(0).label('Login attempt'),
-      loginTimeout: joi.number().default(0).label('Login timeout'),
+      lastAttempt: joi.string().default(0).label('Last attempt'),
     },
   },
 

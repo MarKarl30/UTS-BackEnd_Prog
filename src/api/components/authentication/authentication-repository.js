@@ -9,7 +9,7 @@ async function getUserByEmail(email) {
   return User.findOne({ email });
 }
 
-async function updateLoginAttempt(loginAttempt, email) {
+async function updateLoginAttempt(loginAttempt, lastAttempt, email) {
   return User.updateOne(
     {
       email,
@@ -17,6 +17,7 @@ async function updateLoginAttempt(loginAttempt, email) {
     {
       $set: {
         loginAttempt,
+        lastAttempt,
       },
     }
   );

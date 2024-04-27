@@ -1,6 +1,7 @@
 const { errorResponder, errorTypes } = require('../../../core/errors');
 const authenticationServices = require('./authentication-service');
 const authenticationRepository = require('./authentication-repository');
+const { last } = require('lodash');
 
 /**
  * Handle login request
@@ -17,10 +18,32 @@ async function login(request, response, next) {
     const user = await authenticationRepository.getUserByEmail(email);
     let loginAttempt = user.loginAttempt || 0;
 
-    if (loginAttempt >= 5) {
+    currentTime = new Date(); // currentTime value that will be updated everytime user do login
+    currTime = new Date(currentTime).getTime(); // curretTime in milliseconds to compare with lockoutEndTime
+
+    let lastAttempt = new Date(user.lastAttempt) || null;
+
+    const lockedOutMs = 30 * 60 * 1000; // 30 minutes in milliseconds
+    const lockoutEndTime = new Date(lastAttempt).getTime() + lockedOutMs;
+
+    // Reset loginAttempt at DB if the lockout time has passed
+    if (currTime >= lockoutEndTime && loginAttempt > 5) {
+      await authenticationRepository.updateLoginAttempt(0, currentTime, email);
+      loginAttempt = 0;
+    }
+
+    // If user failed to login 5 times, Do lockout on user account (email)
+    if (user.loginAttempt >= 5 && currentTime - lastAttempt < lockedOutMs) {
+      // Calculate remaining lockout time
+      const remainingLockoutTime = Math.ceil(
+        (lockoutEndTime - currentTime.getTime()) / 60000
+      );
+
       throw errorResponder(
         errorTypes.FORBIDDEN,
-        'Too many failed login attempts'
+        'Too many failed login attempts, Try again in ' +
+          remainingLockoutTime +
+          ' minute(s)'
       );
     }
 
@@ -30,10 +53,15 @@ async function login(request, response, next) {
       password
     );
 
+    // If user fails to login
     if (!loginSuccess) {
-      // Increment and update the login attempt count in the database
+      // Increment and update the login attempt count in the database by 1
       loginAttempt += 1;
-      await authenticationRepository.updateLoginAttempt(loginAttempt, email);
+      await authenticationRepository.updateLoginAttempt(
+        loginAttempt,
+        currentTime,
+        email
+      );
 
       throw errorResponder(
         errorTypes.INVALID_CREDENTIALS,
@@ -41,8 +69,8 @@ async function login(request, response, next) {
       );
     }
 
-    // If login is successful, reset the login attempt count to zero
-    await authenticationRepository.updateLoginAttempt(0, email);
+    // If login is successful, reset the login attempt count to 0
+    await authenticationRepository.updateLoginAttempt(0, currentTime, email);
 
     return response.status(200).json({ loginSuccess });
   } catch (error) {
