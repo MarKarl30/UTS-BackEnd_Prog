@@ -1,7 +1,6 @@
 const { errorResponder, errorTypes } = require('../../../core/errors');
 const authenticationServices = require('./authentication-service');
 const authenticationRepository = require('./authentication-repository');
-const { last } = require('lodash');
 
 /**
  * Handle login request
@@ -16,14 +15,16 @@ async function login(request, response, next) {
   try {
     // Get the current login attempt count from the database
     const user = await authenticationRepository.getUserByEmail(email);
+    // Initialize loginAttempt and lastAttempt var
     let loginAttempt = user.loginAttempt || 0;
+    let lastAttempt = new Date(user.lastAttempt) || null;
 
+    // Initialize currentTime and currTime var
     currentTime = new Date(); // currentTime value that will be updated everytime user do login
     currTime = new Date(currentTime).getTime(); // curretTime in milliseconds to compare with lockoutEndTime
 
-    let lastAttempt = new Date(user.lastAttempt) || null;
-
-    const lockedOutMs = 30 * 60 * 1000; // 30 minutes in milliseconds
+    // Initialize lockedOutMs and lockedoutEndTime var
+    const lockedOutMs = 2 * 60 * 1000; // 30 minutes in milliseconds
     const lockoutEndTime = new Date(lastAttempt).getTime() + lockedOutMs;
 
     // Reset loginAttempt at DB if the lockout time has passed
