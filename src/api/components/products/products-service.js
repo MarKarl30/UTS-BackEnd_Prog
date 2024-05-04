@@ -1,4 +1,4 @@
-const marketplaceRepository = require('./marketplace-repository');
+const productsRepository = require('./products-repository');
 
 /**
  * Get products after search, sort and pagination
@@ -19,7 +19,7 @@ async function getProducts(
   // Cek parameter search adalah string dan mengubah search ke bentuk lowercase
   const searchString = typeof search === 'string' ? search.toLowerCase() : '';
 
-  const products = await marketplaceRepository.getProducts();
+  const products = await productsRepository.getProducts();
   let filteredProducts = products;
 
   // Fungsi Search
@@ -54,7 +54,7 @@ async function getProducts(
 
   // Menetapkan schema data productData yang aka di output sebagai hasil
   const productData = filteredProducts.map((product) => ({
-    sku: product.sku,
+    id: product.id,
     product_name: product.product_name,
     brand: product.brand,
     price: product.price,
@@ -91,11 +91,11 @@ async function getProducts(
 
 /**
  * Get product detail
- * @param {string} sku - Product Sku
+ * @param {string} id - Product Id
  * @returns {Object}
  */
-async function getProduct(sku) {
-  const product = await marketplaceRepository.getProduct(sku);
+async function getProduct(id) {
+  const product = await productsRepository.getProduct(id);
 
   // Product not found
   if (!product) {
@@ -103,7 +103,7 @@ async function getProduct(sku) {
   }
 
   return {
-    sku: product.sku,
+    id: product.id,
     product_name: product.product_name,
     brand: product.brand,
     price: product.price,
@@ -121,7 +121,7 @@ async function getProduct(sku) {
  */
 async function createProduct(product_name, brand, price, category) {
   try {
-    await marketplaceRepository.createProduct(
+    await productsRepository.createProduct(
       product_name,
       brand,
       price,
@@ -136,14 +136,14 @@ async function createProduct(product_name, brand, price, category) {
 
 /**
  * Update existing product
- * @param {String} sku
+ * @param {String} id
  * @param {String} product_name
  * @param {String} brand
  * @param {String} category
  * @returns
  */
-async function updateProduct(sku, product_name, brand, category) {
-  const product = await marketplaceRepository.getProduct(sku);
+async function updateProduct(id, product_name, brand, category) {
+  const product = await productsRepository.getProduct(id);
 
   // Product not found
   if (!product) {
@@ -151,12 +151,7 @@ async function updateProduct(sku, product_name, brand, category) {
   }
 
   try {
-    await marketplaceRepository.updateProduct(
-      sku,
-      product_name,
-      brand,
-      category
-    );
+    await productsRepository.updateProduct(id, product_name, brand, category);
   } catch (err) {
     return null;
   }
@@ -166,11 +161,11 @@ async function updateProduct(sku, product_name, brand, category) {
 
 /**
  * Delete product
- * @param {string} sku - Product Sku
+ * @param {string} id - Product Id
  * @returns {boolean}
  */
-async function deleteProduct(sku) {
-  const product = await marketplaceRepository.getProduct(sku);
+async function deleteProduct(id) {
+  const product = await productsRepository.getProduct(id);
 
   // Product not found
   if (!product) {
@@ -178,7 +173,7 @@ async function deleteProduct(sku) {
   }
 
   try {
-    await marketplaceRepository.deleteProduct(sku);
+    await productsRepository.deleteProduct(id);
   } catch (err) {
     return null;
   }
@@ -187,12 +182,12 @@ async function deleteProduct(sku) {
 }
 
 /**
- * Check whether the sku is registered
- * @param {string} sku - Product Sku
+ * Check whether the id is registered
+ * @param {string} id - Product Id
  * @returns {boolean}
  */
-async function skuIsRegistered(sku) {
-  const product = await marketplaceRepository.getProductBySku(sku);
+async function nameIsRegistered(product_name) {
+  const product = await productsRepository.getProductByName(product_name);
 
   if (product) {
     return true;
@@ -207,5 +202,5 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
-  skuIsRegistered,
+  nameIsRegistered,
 };

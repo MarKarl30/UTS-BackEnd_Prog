@@ -10,11 +10,11 @@ async function getProducts() {
 
 /**
  * Get product detail
- * @param {string} sku - Product SKU
+ * @param {string} id - Product Id
  * @returns {Promise}
  */
-async function getProduct(sku) {
-  return Product.findById(sku);
+async function getProduct(id) {
+  return Product.findById(id);
 }
 
 /**
@@ -36,17 +36,17 @@ async function createProduct(product_name, brand, price, category) {
 
 /**
  * Update existing product
- * @param {String} sku - Product SKU
+ * @param {String} id - Product Id
  * @param {String} product_name
  * @param {String} brand
  * @param {String} price
  * @param {String} category
  * @returns
  */
-async function updateProduct(sku, product_name, brand, price, category) {
+async function updateProduct(id, product_name, brand, price, category) {
   return Product.updateOne(
     {
-      _sku: sku,
+      _id: id,
     },
     {
       $set: {
@@ -61,20 +61,29 @@ async function updateProduct(sku, product_name, brand, price, category) {
 
 /**
  * Delete a product
- * @param {string} sku - Product SKU
+ * @param {string} id - Product Id
  * @returns {Promise}
  */
-async function deleteProduct(sku) {
-  return Product.deleteOne({ _sku: sku });
+async function deleteProduct(id) {
+  return Product.deleteOne({ _id: id });
 }
 
 /**
- * Get product by sku to prevent duplicate product
- * @param {string} sku - Product Sku
+ * Get product by id to prevent duplicate product
+ * @param {string} id - Product Id
  * @returns {Promise}
  */
-async function getProductBySku(sku) {
-  return Product.findById({ sku });
+async function getProductById(id) {
+  return Product.findById({ id });
+}
+
+/**
+ *
+ * @param {string} product_name
+ * @returns
+ */
+async function getProductByName(product_name) {
+  return Product.findOne({ product_name });
 }
 
 module.exports = {
@@ -83,5 +92,6 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
-  getProductBySku,
+  getProductById,
+  getProductByName,
 };

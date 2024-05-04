@@ -1,4 +1,4 @@
-const marketplaceService = require('./marketplace-service');
+const productsService = require('./products-service');
 const { errorResponder, errorTypes } = require('../../../core/errors');
 
 /**
@@ -24,9 +24,9 @@ async function getProducts(request, response, next) {
     let result;
     if (page_number === null || page_size === null) {
       // Jika parameter page_number atau page_size null, maka fetch semua data
-      result = await marketplaceService.getProducts();
+      result = await productsService.getProducts();
     } else {
-      result = await marketplaceService.getProducts(
+      result = await productsService.getProducts(
         search,
         sortField,
         sortOrder,
@@ -50,7 +50,7 @@ async function getProducts(request, response, next) {
  */
 async function getProduct(request, response, next) {
   try {
-    const product = await marketplaceService.getProduct(request.params.sku);
+    const product = await productsService.getProduct(request.params.id);
 
     if (!product) {
       throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Unknown product');
@@ -76,16 +76,17 @@ async function createProduct(request, response, next) {
     const price = request.body.price;
     const category = request.body.category;
 
-    // Sku must be unique
-    const skuIsRegistered = await marketplaceService.skuIsRegistered(sku);
-    if (skuIsRegistered) {
+    // Product Name must be unique
+    const nameIsRegistered =
+      await productsService.nameIsRegistered(product_name);
+    if (nameIsRegistered) {
       throw errorResponder(
         errorTypes.EMAIL_ALREADY_TAKEN,
-        'Sku is already registered'
+        'Product is already registered'
       );
     }
 
-    const success = await marketplaceService.createProduct(
+    const success = await productsService.createProduct(
       product_name,
       brand,
       price,
@@ -113,23 +114,24 @@ async function createProduct(request, response, next) {
  */
 async function updateProduct(request, response, next) {
   try {
-    const sku = request.params.sku;
+    const id = request.params.id;
     const product_name = request.body.product_name;
     const brand = request.body.brand;
     const price = request.body.price;
     const category = request.body.category;
 
-    // Sku must be unique
-    const skuIsRegistered = await marketplaceService.skuIsRegistered(sku);
-    if (skuIsRegistered) {
+    // Product Name must be unique
+    const nameIsRegistered =
+      await productsService.nameIsRegistered(product_name);
+    if (nameIsRegistered) {
       throw errorResponder(
         errorTypes.EMAIL_ALREADY_TAKEN,
-        'Sku is already registered'
+        'Product is already registered'
       );
     }
 
-    const success = await marketplaceService.updateProduct(
-      sku,
+    const success = await productsService.updateProduct(
+      id,
       product_name,
       brand,
       price,
@@ -142,7 +144,7 @@ async function updateProduct(request, response, next) {
       );
     }
 
-    return response.status(200).json({ sku });
+    return response.status(200).json({ id });
   } catch (error) {
     return next(error);
   }
@@ -157,9 +159,9 @@ async function updateProduct(request, response, next) {
  */
 async function deleteProduct(request, response, next) {
   try {
-    const sku = request.params.sku;
+    const id = request.params.id;
 
-    const success = await marketplaceService.deleteProduct(sku);
+    const success = await productsService.deleteProduct(id);
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
@@ -167,7 +169,7 @@ async function deleteProduct(request, response, next) {
       );
     }
 
-    return response.status(200).json({ sku });
+    return response.status(200).json({ id });
   } catch (error) {
     return next(error);
   }
