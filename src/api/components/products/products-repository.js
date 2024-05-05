@@ -9,21 +9,21 @@ async function getProducts() {
 }
 
 /**
- * Get product detail by SKU
+ * Get product detail by sku id
  * @param {string} sku - Product SKU Id
  * @returns {Promise}
  */
 async function getProduct(sku) {
-  return Product.findOne({ sku }); // Corrected parameter structure
+  return Product.findOne({ sku });
 }
 
 /**
  * Create new product
- * @param {Object} product - Product data to create
+ * @param {Object} product
  * @returns {Promise}
  */
 async function createProduct(product) {
-  return Product.create(product); // Create product with given data
+  return Product.create(product); // Create product with queried data
 }
 
 /**
@@ -33,11 +33,11 @@ async function createProduct(product) {
  * @returns {Promise}
  */
 async function updateProduct(sku, updateData) {
-  return Product.findOneAndUpdate({ sku }, { $set: updateData }, { new: true }); // Corrected the typo and added 'new: true' to return updated document
+  return Product.findOneAndUpdate({ sku }, { $set: updateData }, { new: true });
 }
 
 /**
- * Delete a product by SKU
+ * Delete a product by sku id
  * @param {string} sku - Product SKU Id
  * @returns {Promise}
  */
@@ -51,7 +51,7 @@ async function deleteProduct(sku) {
  * @returns {Promise}
  */
 async function getProductBySku(sku) {
-  return Product.findOne({ sku }); // Ensures correct field-based query
+  return Product.findOne({ sku });
 }
 
 module.exports = {

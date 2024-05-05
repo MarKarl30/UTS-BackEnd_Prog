@@ -16,7 +16,7 @@ async function getProducts(
   page_number,
   page_size
 ) {
-  // Cek parameter search adalah string dan mengubah search ke bentuk lowercase
+  // Check if search is a string
   const searchString = typeof search === 'string' ? search.toLowerCase() : '';
 
   const products = await productsRepository.getProducts();
@@ -27,7 +27,7 @@ async function getProducts(
   if (searchString) {
     filteredProducts = filteredProducts.filter(
       (product) =>
-        product?.product_name?.toLowerCase().includes(searchString) || // Validasi sebelum memanggil toLowerCase
+        product?.product_name?.toLowerCase().includes(searchString) ||
         product?.brand?.toLowerCase().includes(searchString) ||
         product?.category?.toLowerCase().includes(searchString)
     );
@@ -36,7 +36,7 @@ async function getProducts(
   // Fungsi Sort
   // Sort berdasarkan sortField sesuai query
   filteredProducts.sort((a, b) => {
-    const aField = a?.[sortField]?.toLowerCase() || ''; // Default ke string kosong jika null atau undefined
+    const aField = a?.[sortField]?.toLowerCase() || '';
     const bField = b?.[sortField]?.toLowerCase() || '';
 
     // Sort berdasarkan sortOrder sesuai query
@@ -116,6 +116,7 @@ async function getProduct(sku) {
  * @returns {Boolean}
  */
 async function createProduct(sku, product_name, brand, price, category) {
+  // Generate random SKU Id if not provided
   function generateSkuId(minLength = 6, maxLength = 12) {
     const charPool =
       '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -133,7 +134,7 @@ async function createProduct(sku, product_name, brand, price, category) {
 
   try {
     // Ensure unique SKU generation
-    const randSku = sku || generateSkuId(); // Fallback to generated SKU if not provided
+    const randSku = sku || generateSkuId(); // Default to generated SKU if not provided
 
     if (await skuIsRegistered(randSku)) {
       throw new Error('SKU already registered');
@@ -150,7 +151,7 @@ async function createProduct(sku, product_name, brand, price, category) {
     return true;
   } catch (err) {
     console.error('Error creating product:', err);
-    return false; // Return false on failure
+    return false;
   }
 }
 
@@ -181,7 +182,7 @@ async function updateProduct(sku, product_name, brand, price, category) {
     return true;
   } catch (err) {
     console.error('Error updating product:', err);
-    return false; // Return false on failure
+    return false;
   }
 }
 
@@ -214,7 +215,7 @@ async function deleteProduct(sku) {
 async function skuIsRegistered(sku) {
   const product = await productsRepository.getProductBySku(sku);
 
-  return !!product; // Return true if product exists
+  return !!product;
 }
 
 module.exports = {

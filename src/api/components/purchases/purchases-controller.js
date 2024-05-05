@@ -2,23 +2,23 @@ const purchasesService = require('./purchases-service');
 const { errorResponder, errorTypes } = require('../../../core/errors'); // Pastikan ini benar-benar ada dan diatur dengan benar
 
 /**
- * Get a list of purchases with search, sort, and pagination
- * @param {Object} request - Express request object
- * @param {Object} response - Express response object
- * @param {Function} next - Express middleware
- * @returns {Promise<Object>} The response object or passes an error to the next middleware
+ * List all purchases entries with search, sort, and pagination
+ * @param {Object} request
+ * @param {Object} response
+ * @param {Function} next
+ * @returns {Promise}
  */
 async function getPurchasesList(request, response, next) {
   try {
     const page_number = request.query.page_number
       ? parseInt(request.query.page_number, 10)
-      : 1; // Default page number
+      : 1;
     const page_size = request.query.page_size
       ? parseInt(request.query.page_size, 10)
-      : 10; // Default page size
-    const search = request.query.search || ''; // Search term
-    const sortField = request.query.sortField || 'email'; // Default sort field
-    const sortOrder = request.query.sortOrder || 'asc'; // Default sort order
+      : 10;
+    const search = request.query.search || '';
+    const sortField = request.query.sortField || 'email';
+    const sortOrder = request.query.sortOrder || 'asc';
 
     const purchasesList = await purchasesService.getPurchases(
       search,
@@ -31,30 +31,30 @@ async function getPurchasesList(request, response, next) {
     return response.status(200).json(purchasesList);
   } catch (error) {
     console.error('Error fetching purchases list:', error);
-    return next(error); // Pass error to the next middleware
+    return next(error);
   }
 }
 
 /**
- * Get specific purchase details by email
- * @param {Object} request - Express request object
- * @param {Object} response - Express response object
- * @param {Function} next - Express middleware
- * @returns {Promise<Object|null>} The purchase detail or passes an error
+ * Get specific purchase details by purchase entry id
+ * @param {Object} request
+ * @param {Object} response
+ * @param {Function} next
+ * @returns {Promise}
  */
 async function getPurchaseDetail(request, response, next) {
   try {
-    const email = request.params.email; // Get email from request parameters
-    const purchase = await purchasesService.getPurchaseDetail(email);
+    const id = request.params.id; // Get id from request parameters
+    const purchase = await purchasesService.getPurchaseDetail(id);
 
     if (!purchase) {
       throw errorResponder(
         errorTypes.NOT_FOUND,
-        'Purchase not found with given email'
-      ); // Custom error handling
+        'Purchase entry not found with given Purchase Id'
+      );
     }
 
-    return response.status(200).json(purchase); // Return the purchase details
+    return response.status(200).json(purchase);
   } catch (error) {
     console.error('Error fetching purchase detail:', error);
     return next(error);
@@ -63,10 +63,10 @@ async function getPurchaseDetail(request, response, next) {
 
 /**
  * Create a new purchase entry
- * @param {Object} request - Express request object
- * @param {Object} response - Express response object
- * @param {Function} next - Express middleware
- * @returns {Promise<Object>} The response object or passes an error
+ * @param {Object} request
+ * @param {Object} response
+ * @param {Function} next
+ * @returns {Promise}
  */
 async function createPurchaseEntry(request, response, next) {
   try {
@@ -83,10 +83,10 @@ async function createPurchaseEntry(request, response, next) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
         'Failed to create purchase entry'
-      ); // Error handling for creation failure
+      );
     }
 
-    return response.status(201).json(newPurchase); // Status 201 for successful creation
+    return response.status(201).json(newPurchase);
   } catch (error) {
     console.error('Error creating purchase entry:', error);
     return next(error);
@@ -95,19 +95,19 @@ async function createPurchaseEntry(request, response, next) {
 
 /**
  * Update purchase entry with new product
- * @param {Object} request - Express request object
- * @param {Object} response - Express response object
- * @param {Function} next - Express middleware
- * @returns {Promise<Object|null>} The response object or passes an error
+ * @param {Object} request
+ * @param {Object} response
+ * @param {Function} next
+ * @returns {Promise}
  */
 async function addProductToPurchase(request, response, next) {
   try {
-    const email = request.params.email; // Get email from the request parameter
-    const productId = request.body.productId; // Get the product ID to be added
+    const id = request.body.id; // Get id from request body
+    const productSku = request.body.productSku; // Get the Product Sku to be added
 
     const updatedPurchase = await purchasesService.addProductToPurchase(
-      email,
-      productId
+      id,
+      productSku
     );
 
     if (!updatedPurchase) {
@@ -117,28 +117,28 @@ async function addProductToPurchase(request, response, next) {
       );
     }
 
-    return response.status(200).json(updatedPurchase); // Return the updated purchase
+    return response.status(200).json(updatedPurchase); // Return the updated purchase entries
   } catch (error) {
     console.error('Error adding product to purchase:', error);
-    return next(error); // Pass error to the next middleware
+    return next(error);
   }
 }
 
 /**
  * Delete a product from a purchase by email and product ID
- * @param {Object} request - Express request object
- * @param {Object} response - Express response object
- * @param {Function} next - Express middleware
- * @returns {Promise<Object|null>} The response object or passes an error
+ * @param {Object} request
+ * @param {Object} response
+ * @param {Function} next
+ * @returns {Promise}
  */
 async function deleteProductFromPurchase(request, response, next) {
   try {
-    const email = request.params.email; // Get email from the request parameter
-    const productId = request.body.productId; // Get the product ID to be deleted
+    const id = request.body.id; // Get id from request body
+    const productSku = request.body.productSku; // Get the Product Sku to be removed
 
     const updatedPurchase = await purchasesService.deleteProductFromPurchase(
-      email,
-      productId
+      id,
+      productSku
     );
 
     if (!updatedPurchase) {
@@ -148,10 +148,10 @@ async function deleteProductFromPurchase(request, response, next) {
       );
     }
 
-    return response.status(200).json(updatedPurchase); // Return the updated purchase
+    return response.status(200).json(updatedPurchase); // Return the updated purchase entries
   } catch (error) {
     console.error('Error deleting product from purchase:', error);
-    return next(error); // Pass error to the next middleware
+    return next(error);
   }
 }
 

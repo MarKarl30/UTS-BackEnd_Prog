@@ -3,10 +3,10 @@ const { errorResponder, errorTypes } = require('../../../core/errors');
 
 /**
  * Handle get list of products request
- * @param {Object} request - Express request object
- * @param {Object} response - Express response object
- * @param {Function} next - Express route middlewares
- * @returns {Object} Response object or pass an error to the next route
+ * @param {Object} request
+ * @param {Object} response
+ * @param {Function} next
+ * @returns {Object}
  */
 async function getProducts(request, response, next) {
   try {
@@ -36,16 +36,16 @@ async function getProducts(request, response, next) {
 
     return response.status(200).json(result);
   } catch (error) {
-    return next(error); // Pass the error to the next middleware
+    return next(error);
   }
 }
 
 /**
  * Handle get product detail request
- * @param {Object} request - Express request object
- * @param {Object} response - Express response object
- * @param {Function} next - Express route middlewares
- * @returns {Object} Response object or pass an error to the next route
+ * @param {Object} request
+ * @param {Object} response
+ * @param {Function} next
+ * @returns {Object}
  */
 async function getProduct(request, response, next) {
   try {
@@ -63,10 +63,10 @@ async function getProduct(request, response, next) {
 
 /**
  * Handle create product request
- * @param {Object} request - Express request object
- * @param {Object} response - Express response object
- * @param {Function} next - Express route middlewares
- * @returns {Object} Response object or pass an error to the next route
+ * @param {Object} request
+ * @param {Object} response
+ * @param {Function} next
+ * @returns {Object}
  */
 async function createProduct(request, response, next) {
   try {
@@ -77,7 +77,7 @@ async function createProduct(request, response, next) {
     const category = request.body.category;
 
     const skuIsRegistered = await productsService.skuIsRegistered(sku);
-
+    //Check if the SKU is already registered
     if (skuIsRegistered) {
       throw errorResponder(
         errorTypes.DB_DUPLICATE_CONFLICT,
@@ -110,13 +110,14 @@ async function createProduct(request, response, next) {
 
 /**
  * Handle update product request
- * @param {Object} request - Express request object
- * @param {Object} response - Express response object
- * @param {Function} next - Express route middlewares
- * @returns {Object} Response object or pass an error to the next route
+ * @param {Object} request
+ * @param {Object} response
+ * @param {Function} next
+ * @returns {Object}
  */
 async function updateProduct(request, response, next) {
   try {
+    //Declaring the variables
     const sku = request.params.sku;
     const product_name = request.body.product_name;
     const brand = request.body.brand;
@@ -146,10 +147,10 @@ async function updateProduct(request, response, next) {
 
 /**
  * Handle delete product request
- * @param {Object} request - Express request object
- * @param {Object} response - Express response object
- * @param {Function} next - Express route middlewares
- * @returns {Object} Response object or pass an error to the next route
+ * @param {Object} request
+ * @param {Object} response
+ * @param {Function} next
+ * @returns {Object}
  */
 async function deleteProduct(request, response, next) {
   try {
@@ -166,7 +167,7 @@ async function deleteProduct(request, response, next) {
 
     return response.status(200).json({ sku });
   } catch (error) {
-    return next(error); // Pass the error to the error handling middleware
+    return next(error);
   }
 }
 

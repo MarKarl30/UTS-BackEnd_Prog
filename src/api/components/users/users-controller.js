@@ -3,14 +3,14 @@ const { errorResponder, errorTypes } = require('../../../core/errors');
 
 /**
  * Handle get list of users request
- * @param {object} request - Express request object
- * @param {object} response - Express response object
- * @param {object} next - Express route middlewares
- * @returns {object} Response object or pass an error to the next route
+ * @param {object} request
+ * @param {object} response
+ * @param {object} next
+ * @returns {object}
  */
 async function getUsers(request, response, next) {
   try {
-    // Fetch query dari bruno
+    // Fetching query parameters from bruno
     page_number = request.query.page_number
       ? parseInt(request.query.page_number, 10)
       : null;
@@ -23,7 +23,7 @@ async function getUsers(request, response, next) {
 
     let result;
     if (page_number === null || page_size === null) {
-      // Jika parameter page_number atau page_size null, maka fetch semua data
+      // If page_number or page_size is not provided, get all users
       result = await usersService.getUsers();
     } else {
       result = await usersService.getUsers(
@@ -43,10 +43,10 @@ async function getUsers(request, response, next) {
 
 /**
  * Handle get user detail request
- * @param {object}request - Express request object
- * @param {object} response - Express response object
- * @param {object} next - Express route middlewares
- * @returns {object} Response object or pass an error to the next route
+ * @param {object}request
+ * @param {object} response
+ * @param {object} next
+ * @returns {object}
  */
 async function getUser(request, response, next) {
   try {
@@ -64,10 +64,10 @@ async function getUser(request, response, next) {
 
 /**
  * Handle create user request
- * @param {object} request - Express request object
- * @param {object} response - Express response object
- * @param {object} next - Express route middlewares
- * @returns {object} Response object or pass an error to the next route
+ * @param {object} request
+ * @param {object} response
+ * @param {object} next
+ * @returns {object}
  */
 async function createUser(request, response, next) {
   try {
@@ -117,10 +117,10 @@ async function createUser(request, response, next) {
 
 /**
  * Handle update user request
- * @param {object} request - Express request object
- * @param {object} response - Express response object
- * @param {object} next - Express route middlewares
- * @returns {object} Response object or pass an error to the next route
+ * @param {object} request
+ * @param {object} response
+ * @param {object} next
+ * @returns {object}
  */
 async function updateUser(request, response, next) {
   try {
@@ -153,10 +153,10 @@ async function updateUser(request, response, next) {
 
 /**
  * Handle delete user request
- * @param {object} request - Express request object
- * @param {object} response - Express response object
- * @param {object} next - Express route middlewares
- * @returns {object} Response object or pass an error to the next route
+ * @param {object} request
+ * @param {object} response
+ * @param {object} next
+ * @returns {object}
  */
 async function deleteUser(request, response, next) {
   try {
@@ -178,10 +178,10 @@ async function deleteUser(request, response, next) {
 
 /**
  * Handle change user password request
- * @param {object} request - Express request object
- * @param {object} response - Express response object
- * @param {object} next - Express route middlewares
- * @returns {object} Response object or pass an error to the next route
+ * @param {object} request
+ * @param {object} response
+ * @param {object} next
+ * @returns {object}
  */
 async function changePassword(request, response, next) {
   try {

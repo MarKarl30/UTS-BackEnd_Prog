@@ -1,48 +1,48 @@
 const express = require('express');
 
-const authenticationMiddleware = require('../../middlewares/authentication-middleware'); // Pastikan ini diatur dengan benar
+const authenticationMiddleware = require('../../middlewares/authentication-middleware');
 const celebrate = require('../../../core/celebrate-wrappers');
-const purchasesControllers = require('./purchases-controller'); // Pastikan rujukan ke controller benar
-const purchasesValidator = require('./purchases-validator'); // Pastikan validasi ada
+const purchasesControllers = require('./purchases-controller');
+const purchasesValidator = require('./purchases-validator');
 
 const route = express.Router();
 
 module.exports = (app) => {
-  app.use('/purchases', route); // Rute dasar untuk pembelian
+  app.use('/purchases', route);
 
-  // Mendapatkan daftar pembelian
+  // Fetching list of purchases
   route.get(
     '/',
     authenticationMiddleware,
     purchasesControllers.getPurchasesList
-  ); // Menggunakan controller yang benar
-
-  // Mendapatkan detail pembelian berdasarkan email
-  route.get(
-    '/:email', // Menggunakan email sebagai parameter
-    authenticationMiddleware,
-    purchasesControllers.getPurchaseDetail // Pastikan menggunakan fungsi controller yang benar
   );
 
-  // Membuat entri pembelian baru
+  // Fetching purchase details by ID
+  route.get(
+    '/:id',
+    authenticationMiddleware,
+    purchasesControllers.getPurchaseDetail
+  );
+
+  // Creating a new purchase entry
   route.post(
     '/',
     authenticationMiddleware,
-    celebrate(purchasesValidator.createPurchaseEntry), // Validasi sebelum membuat entri baru
-    purchasesControllers.createPurchaseEntry // Fungsi controller yang tepat
+    celebrate(purchasesValidator.createPurchaseEntry),
+    purchasesControllers.createPurchaseEntry
   );
 
-  // Menambahkan produk ke pembelian berdasarkan email
+  // Adding product to purchase by id
   route.put(
-    '/add-product/:email', // Email sebagai parameter
+    '/add-product',
     authenticationMiddleware,
-    purchasesControllers.addProductToPurchase // Fungsi untuk menambahkan produk ke pembelian
+    purchasesControllers.addProductToPurchase
   );
 
-  // Menghapus produk dari pembelian berdasarkan email dan ID produk
+  // Deleting product from purchase by id
   route.delete(
-    '/remove-product/:email', // Email sebagai parameter
+    '/remove-product',
     authenticationMiddleware,
-    purchasesControllers.deleteProductFromPurchase // Fungsi untuk menghapus produk dari pembelian
+    purchasesControllers.deleteProductFromPurchase
   );
 };

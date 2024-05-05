@@ -9,9 +9,15 @@ module.exports = {
     },
   },
 
+  addProductToPurchase: {
+    body: {
+      productSku: joi.string().length(24).required().label('Product Sku'),
+    },
+  },
+
   deleteProductFromPurchase: {
     body: {
-      productId: joi.string().length(24).required().label('Product ID'), // Validasi ID produk yang ingin dihapus
+      productSku: joi.string().length(24).required().label('Product Sku'),
     },
   },
 };

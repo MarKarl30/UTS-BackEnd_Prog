@@ -1,6 +1,6 @@
 const joi = require('joi');
 
-const skuPattern = /^[a-zA-Z0-9]{6,12}$/; // Alphanumeric, 6 to 12 characters
+const skuPattern = /^[a-zA-Z0-9]{6,12}$/; // Pattern for SKU
 
 module.exports = {
   createProduct: {

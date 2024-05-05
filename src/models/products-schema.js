@@ -2,8 +2,8 @@ const productsSchema = {
   sku: {
     type: String,
     required: true,
-    unique: true, // Ensure SKU is unique
-    trim: true, // Remove leading/trailing whitespace
+    unique: true,
+    trim: true,
   },
   product_name: {
     type: String,
@@ -18,7 +18,7 @@ const productsSchema = {
   price: {
     type: Number,
     required: true,
-    min: 0, // Ensure price is non-negative
+    min: 0,
   },
   category: {
     type: String,
