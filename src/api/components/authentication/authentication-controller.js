@@ -24,7 +24,7 @@ async function login(request, response, next) {
     currTime = new Date(currentTime).getTime(); // curretTime in milliseconds to compare with lockoutEndTime
 
     // Initialize lockedOutMs and lockedoutEndTime var
-    const lockedOutMs = 2 * 60 * 1000; // 30 minutes in milliseconds
+    const lockedOutMs = 30 * 60 * 1000; // 30 minutes in milliseconds
     const lockoutEndTime = new Date(lastAttempt).getTime() + lockedOutMs;
 
     // Reset loginAttempt at DB if the lockout time has passed
