@@ -2,29 +2,28 @@ const productsService = require('./products-service');
 const { errorResponder, errorTypes } = require('../../../core/errors');
 
 /**
- * Handle get list of product request
- * @param {object} request - Express request object
- * @param {object} response - Express response object
- * @param {object} next - Express route middlewares
- * @returns {object} Response object or pass an error to the next route
+ * Handle get list of products request
+ * @param {Object} request - Express request object
+ * @param {Object} response - Express response object
+ * @param {Function} next - Express route middlewares
+ * @returns {Object} Response object or pass an error to the next route
  */
 async function getProducts(request, response, next) {
   try {
-    // Fetch query dari bruno
-    page_number = request.query.page_number
+    const page_number = request.query.page_number
       ? parseInt(request.query.page_number, 10)
       : null;
-    page_size = request.query.page_size
+    const page_size = request.query.page_size
       ? parseInt(request.query.page_size, 10)
       : null;
-    search = request.query.search || '';
-    sortField = request.query.sortField || 'email';
-    sortOrder = request.query.sortOrder || 'asc';
+    const search = request.query.search || '';
+    const sortField = request.query.sortField || 'product_name';
+    const sortOrder = request.query.sortOrder || 'asc';
 
     let result;
+
     if (page_number === null || page_size === null) {
-      // Jika parameter page_number atau page_size null, maka fetch semua data
-      result = await productsService.getProducts();
+      result = await productsService.getProducts(); // Fetch all data
     } else {
       result = await productsService.getProducts(
         search,
@@ -37,20 +36,20 @@ async function getProducts(request, response, next) {
 
     return response.status(200).json(result);
   } catch (error) {
-    return next(error);
+    return next(error); // Pass the error to the next middleware
   }
 }
 
 /**
  * Handle get product detail request
- * @param {object}request - Express request object
- * @param {object} response - Express response object
- * @param {object} next - Express route middlewares
- * @returns {object} Response object or pass an error to the next route
+ * @param {Object} request - Express request object
+ * @param {Object} response - Express response object
+ * @param {Function} next - Express route middlewares
+ * @returns {Object} Response object or pass an error to the next route
  */
 async function getProduct(request, response, next) {
   try {
-    const product = await productsService.getProduct(request.params.id);
+    const product = await productsService.getProduct(request.params.sku);
 
     if (!product) {
       throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Unknown product');
@@ -64,34 +63,36 @@ async function getProduct(request, response, next) {
 
 /**
  * Handle create product request
- * @param {object} request - Express request object
- * @param {object} response - Express response object
- * @param {object} next - Express route middlewares
- * @returns {object} Response object or pass an error to the next route
+ * @param {Object} request - Express request object
+ * @param {Object} response - Express response object
+ * @param {Function} next - Express route middlewares
+ * @returns {Object} Response object or pass an error to the next route
  */
 async function createProduct(request, response, next) {
   try {
+    const sku = request.body.sku;
     const product_name = request.body.product_name;
     const brand = request.body.brand;
     const price = request.body.price;
     const category = request.body.category;
 
-    // Product Name must be unique
-    const nameIsRegistered =
-      await productsService.nameIsRegistered(product_name);
-    if (nameIsRegistered) {
+    const skuIsRegistered = await productsService.skuIsRegistered(sku);
+
+    if (skuIsRegistered) {
       throw errorResponder(
-        errorTypes.EMAIL_ALREADY_TAKEN,
-        'Product is already registered'
+        errorTypes.DB_DUPLICATE_CONFLICT,
+        'Product SKU is already registered'
       );
     }
 
     const success = await productsService.createProduct(
+      sku,
       product_name,
       brand,
       price,
       category
     );
+
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
@@ -99,7 +100,9 @@ async function createProduct(request, response, next) {
       );
     }
 
-    return response.status(200).json({ product_name, brand, price, category });
+    return response
+      .status(200)
+      .json({ sku, product_name, brand, price, category });
   } catch (error) {
     return next(error);
   }
@@ -107,36 +110,27 @@ async function createProduct(request, response, next) {
 
 /**
  * Handle update product request
- * @param {object} request - Express request object
- * @param {object} response - Express response object
- * @param {object} next - Express route middlewares
- * @returns {object} Response object or pass an error to the next route
+ * @param {Object} request - Express request object
+ * @param {Object} response - Express response object
+ * @param {Function} next - Express route middlewares
+ * @returns {Object} Response object or pass an error to the next route
  */
 async function updateProduct(request, response, next) {
   try {
-    const id = request.params.id;
+    const sku = request.params.sku;
     const product_name = request.body.product_name;
     const brand = request.body.brand;
     const price = request.body.price;
     const category = request.body.category;
 
-    // Product Name must be unique
-    const nameIsRegistered =
-      await productsService.nameIsRegistered(product_name);
-    if (nameIsRegistered) {
-      throw errorResponder(
-        errorTypes.EMAIL_ALREADY_TAKEN,
-        'Product is already registered'
-      );
-    }
-
     const success = await productsService.updateProduct(
-      id,
+      sku,
       product_name,
       brand,
       price,
       category
     );
+
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
@@ -144,7 +138,7 @@ async function updateProduct(request, response, next) {
       );
     }
 
-    return response.status(200).json({ id });
+    return response.status(200).json({ sku });
   } catch (error) {
     return next(error);
   }
@@ -152,16 +146,17 @@ async function updateProduct(request, response, next) {
 
 /**
  * Handle delete product request
- * @param {object} request - Express request object
- * @param {object} response - Express response object
- * @param {object} next - Express route middlewares
- * @returns {object} Response object or pass an error to the next route
+ * @param {Object} request - Express request object
+ * @param {Object} response - Express response object
+ * @param {Function} next - Express route middlewares
+ * @returns {Object} Response object or pass an error to the next route
  */
 async function deleteProduct(request, response, next) {
   try {
-    const id = request.params.id;
+    const sku = request.params.sku;
 
-    const success = await productsService.deleteProduct(id);
+    const success = await productsService.deleteProduct(sku);
+
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
@@ -169,9 +164,9 @@ async function deleteProduct(request, response, next) {
       );
     }
 
-    return response.status(200).json({ id });
+    return response.status(200).json({ sku });
   } catch (error) {
-    return next(error);
+    return next(error); // Pass the error to the error handling middleware
   }
 }
 

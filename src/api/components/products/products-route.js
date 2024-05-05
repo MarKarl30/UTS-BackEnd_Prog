@@ -22,11 +22,11 @@ module.exports = (app) => {
   );
 
   // Get Product detail
-  route.get('/:id', authenticationMiddleware, productsControllers.getProduct);
+  route.get('/:sku', authenticationMiddleware, productsControllers.getProduct);
 
   // Update Product entry
   route.put(
-    '/:id',
+    '/:sku',
     authenticationMiddleware,
     celebrate(productsValidator.updateProduct),
     productsControllers.updateProduct
@@ -34,7 +34,7 @@ module.exports = (app) => {
 
   // Delete Product
   route.delete(
-    '/:id',
+    '/:sku',
     authenticationMiddleware,
     productsControllers.deleteProduct
   );

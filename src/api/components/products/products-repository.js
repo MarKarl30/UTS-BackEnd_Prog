@@ -9,81 +9,49 @@ async function getProducts() {
 }
 
 /**
- * Get product detail
- * @param {string} id - Product Id
+ * Get product detail by SKU
+ * @param {string} sku - Product SKU Id
  * @returns {Promise}
  */
-async function getProduct(id) {
-  return Product.findById(id);
+async function getProduct(sku) {
+  return Product.findOne({ sku }); // Corrected parameter structure
 }
 
 /**
  * Create new product
- * @param {String} product_name
- * @param {String} brand
- * @param {String} price
- * @param {String} category
- * @returns
- */
-async function createProduct(product_name, brand, price, category) {
-  return Product.create({
-    product_name,
-    brand,
-    price,
-    category,
-  });
-}
-
-/**
- * Update existing product
- * @param {String} id - Product Id
- * @param {String} product_name
- * @param {String} brand
- * @param {String} price
- * @param {String} category
- * @returns
- */
-async function updateProduct(id, product_name, brand, price, category) {
-  return Product.updateOne(
-    {
-      _id: id,
-    },
-    {
-      $set: {
-        product_name,
-        brand,
-        price,
-        category,
-      },
-    }
-  );
-}
-
-/**
- * Delete a product
- * @param {string} id - Product Id
+ * @param {Object} product - Product data to create
  * @returns {Promise}
  */
-async function deleteProduct(id) {
-  return Product.deleteOne({ _id: id });
+async function createProduct(product) {
+  return Product.create(product); // Create product with given data
 }
 
 /**
- * Get product by id to prevent duplicate product
- * @param {string} id - Product Id
+ * Update existing product by SKU
+ * @param {String} sku - Product SKU Id
+ * @param {Object} updateData - Data to update
  * @returns {Promise}
  */
-async function getProductById(id) {
-  return Product.findById({ id });
+async function updateProduct(sku, updateData) {
+  return Product.findOneAndUpdate({ sku }, { $set: updateData }, { new: true }); // Corrected the typo and added 'new: true' to return updated document
 }
 
 /**
- *
- * @param {string} product_name
- * @returns
+ * Delete a product by SKU
+ * @param {string} sku - Product SKU Id
+ * @returns {Promise}
  */
-async function getProductByName(product_name) {
-  return Product.findOne({ product_name });
+async function deleteProduct(sku) {
+  return Product.findOneAndDelete({ sku });
+}
+
+/**
+ * Get product by SKU id to prevent duplicate product
+ * @param {string} sku - Product SKU Id
+ * @returns {Promise}
+ */
+async function getProductBySku(sku) {
+  return Product.findOne({ sku }); // Ensures correct field-based query
 }
 
 module.exports = {
@@ -92,6 +60,5 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
-  getProductById,
-  getProductByName,
+  getProductBySku,
 };

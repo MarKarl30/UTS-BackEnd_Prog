@@ -1,7 +1,7 @@
 const productsRepository = require('./products-repository');
 
 /**
- * Get products after search, sort and pagination
+ * Get users after search, sort and pagination
  * @param {String} search
  * @param {String} sortField
  * @param {String} sortOrder
@@ -23,13 +23,13 @@ async function getProducts(
   let filteredProducts = products;
 
   // Fungsi Search
-  // Search berdasarkan parameter searchString kepada data product_name, brand dan category
+  // Search berdasarkan parameter searchString kepada data name dan email
   if (searchString) {
     filteredProducts = filteredProducts.filter(
       (product) =>
         product?.product_name?.toLowerCase().includes(searchString) || // Validasi sebelum memanggil toLowerCase
         product?.brand?.toLowerCase().includes(searchString) ||
-        product?.category.toLowerCase().includes(searchString)
+        product?.category?.toLowerCase().includes(searchString)
     );
   }
 
@@ -52,9 +52,9 @@ async function getProducts(
   const has_previous_page = page_number > 1;
   const has_next_page = page_number < total_pages;
 
-  // Menetapkan schema data productData yang aka di output sebagai hasil
+  // Menetapkan schema data userData yang aka di output sebagai hasil
   const productData = filteredProducts.map((product) => ({
-    id: product.id,
+    sku: product.sku,
     product_name: product.product_name,
     brand: product.brand,
     price: product.price,
@@ -90,20 +90,19 @@ async function getProducts(
 }
 
 /**
- * Get product detail
- * @param {string} id - Product Id
+ * Get product detail by SKU
+ * @param {String} sku - Product SKU Id
  * @returns {Object}
  */
-async function getProduct(id) {
-  const product = await productsRepository.getProduct(id);
+async function getProduct(sku) {
+  const product = await productsRepository.getProduct(sku);
 
-  // Product not found
   if (!product) {
     return null;
   }
 
   return {
-    id: product.id,
+    sku: product.sku,
     product_name: product.product_name,
     brand: product.brand,
     price: product.price,
@@ -113,87 +112,109 @@ async function getProduct(id) {
 
 /**
  * Create new product
+ * @param {Object} productData - Product data to create
+ * @returns {Boolean}
+ */
+async function createProduct(sku, product_name, brand, price, category) {
+  function generateSkuId(minLength = 6, maxLength = 12) {
+    const charPool =
+      '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const skuLength =
+      Math.floor(Math.random() * (maxLength - minLength + 1)) + minLength;
+
+    let skuId = '';
+    for (let i = 0; i < skuLength; i++) {
+      const randomIndex = Math.floor(Math.random() * charPool.length);
+      skuId += charPool[randomIndex];
+    }
+
+    return skuId;
+  }
+
+  try {
+    // Ensure unique SKU generation
+    const randSku = sku || generateSkuId(); // Fallback to generated SKU if not provided
+
+    if (await skuIsRegistered(randSku)) {
+      throw new Error('SKU already registered');
+    }
+
+    await productsRepository.createProduct({
+      sku: randSku,
+      product_name,
+      brand,
+      price,
+      category,
+    });
+
+    return true;
+  } catch (err) {
+    console.error('Error creating product:', err);
+    return false; // Return false on failure
+  }
+}
+
+/**
+ * Update existing product by SKU
+ * @param {String} sku - Product SKU Id
  * @param {String} product_name
  * @param {String} brand
  * @param {String} price
  * @param {String} category
- * @returns
+ * @returns {Boolean}
  */
-async function createProduct(product_name, brand, price, category) {
+async function updateProduct(sku, product_name, brand, price, category) {
+  const product = await productsRepository.getProduct(sku);
+
+  if (!product) {
+    return false;
+  }
+
   try {
-    await productsRepository.createProduct(
+    await productsRepository.updateProduct(sku, {
       product_name,
       brand,
       price,
-      category
-    );
-  } catch (err) {
-    return null;
-  }
+      category,
+    });
 
-  return true;
-}
-
-/**
- * Update existing product
- * @param {String} id
- * @param {String} product_name
- * @param {String} brand
- * @param {String} category
- * @returns
- */
-async function updateProduct(id, product_name, brand, category) {
-  const product = await productsRepository.getProduct(id);
-
-  // Product not found
-  if (!product) {
-    return null;
-  }
-
-  try {
-    await productsRepository.updateProduct(id, product_name, brand, category);
-  } catch (err) {
-    return null;
-  }
-
-  return true;
-}
-
-/**
- * Delete product
- * @param {string} id - Product Id
- * @returns {boolean}
- */
-async function deleteProduct(id) {
-  const product = await productsRepository.getProduct(id);
-
-  // Product not found
-  if (!product) {
-    return null;
-  }
-
-  try {
-    await productsRepository.deleteProduct(id);
-  } catch (err) {
-    return null;
-  }
-
-  return true;
-}
-
-/**
- * Check whether the id is registered
- * @param {string} id - Product Id
- * @returns {boolean}
- */
-async function nameIsRegistered(product_name) {
-  const product = await productsRepository.getProductByName(product_name);
-
-  if (product) {
     return true;
+  } catch (err) {
+    console.error('Error updating product:', err);
+    return false; // Return false on failure
+  }
+}
+
+/**
+ * Delete product by SKU
+ * @param {String} sku - Product SKU Id
+ * @returns {Boolean}
+ */
+async function deleteProduct(sku) {
+  const product = await productsRepository.getProduct(sku);
+
+  if (!product) {
+    return false;
   }
 
-  return false;
+  try {
+    await productsRepository.deleteProduct(sku);
+    return true;
+  } catch (err) {
+    console.error('Error deleting product:', err);
+    return false;
+  }
+}
+
+/**
+ * Check whether SKU is registered to prevent duplicate product
+ * @param {String} sku - Product SKU Id
+ * @returns {Boolean}
+ */
+async function skuIsRegistered(sku) {
+  const product = await productsRepository.getProductBySku(sku);
+
+  return !!product; // Return true if product exists
 }
 
 module.exports = {
@@ -202,5 +223,5 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
-  nameIsRegistered,
+  skuIsRegistered,
 };
